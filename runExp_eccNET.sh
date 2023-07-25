@@ -1,5 +1,4 @@
 #!/bin/bash
-
 cd vs_exp/eccNET
 echo ""
 echo "#########################################"
