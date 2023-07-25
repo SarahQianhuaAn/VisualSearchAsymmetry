@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from skimage.draw import circle
+from skimage.draw import disk
 
 class CentreDependentPooling2D(tf.keras.layers.Layer):
     """
@@ -70,7 +70,7 @@ class CentreDependentPooling2D(tf.keras.layers.Layer):
         else:
             # first mask -----
             temp_mask = np.copy(mask_size)
-            rr, cc = circle(c, c, ecc)
+            rr, cc = disk((c, c), ecc)
             temp_mask[rr, cc, :] = 1
             (self.mask).append(tf.constant(temp_mask, tf.float32))
             (self.ecc_border).append(2*ecc)
@@ -80,9 +80,9 @@ class CentreDependentPooling2D(tf.keras.layers.Layer):
             ecc += round((self.rf_quant*self.deg2px)/2)
             while ecc < self.out_shape/2:
                 temp_mask = np.copy(mask_size)
-                rr, cc = circle(c, c, ecc)
+                rr, cc = disk((c, c), ecc)
                 temp_mask[rr, cc, :] = 1
-                rr, cc = circle(c, c, ecc-round((self.rf_quant*self.deg2px)/2))
+                rr, cc = disk((c, c), ecc-round((self.rf_quant*self.deg2px)/2))
                 temp_mask[rr, cc, :] = 0
                 (self.mask).append(tf.constant(temp_mask, tf.float32))
                 (self.ecc_border).append(2*ecc)
@@ -91,7 +91,7 @@ class CentreDependentPooling2D(tf.keras.layers.Layer):
 
             # end mask --------
             temp_mask = np.ones(mask_size.shape)
-            rr, cc = circle(c, c, ecc-round((self.rf_quant*self.deg2px)/2))
+            rr, cc = disk((c, c), ecc-round((self.rf_quant*self.deg2px)/2))
             temp_mask[rr, cc, :] = 0
             (self.mask).append(tf.constant(temp_mask, tf.float32))
             (self.ecc_border).append(2*ecc)
@@ -256,6 +256,7 @@ def load_eccNET(vgg_model_path, stimuli_shape=(224, 224, 3), target_shape=(28, 2
         depth = 1
 
         # Block 1 #############################################################
+        print("making block 1")
         x = block1_conv(img_input)
 
         if comp_layer == "diff" and model_type == "target":
@@ -271,6 +272,7 @@ def load_eccNET(vgg_model_path, stimuli_shape=(224, 224, 3), target_shape=(28, 2
         depth += 1
 
         # Block 2 #############################################################
+        print("making block 2")
         x = block2_conv(x)
 
         if comp_layer == "diff" and model_type == "target":
@@ -286,6 +288,7 @@ def load_eccNET(vgg_model_path, stimuli_shape=(224, 224, 3), target_shape=(28, 2
         depth += 1
 
         # Block 3 #############################################################
+        print("making block 3")
         x = block3_conv(x)
 
         if comp_layer == "diff" and model_type == "target":
@@ -301,6 +304,7 @@ def load_eccNET(vgg_model_path, stimuli_shape=(224, 224, 3), target_shape=(28, 2
         depth += 1
 
         # Block 4 #############################################################
+        print("making block 4")
         x = block4_conv(x)
 
         if comp_layer == "diff" and model_type == "target":
@@ -316,6 +320,7 @@ def load_eccNET(vgg_model_path, stimuli_shape=(224, 224, 3), target_shape=(28, 2
         depth += 1
 
         # Block 5 #############################################################
+        print("making block 5")
         x = block5_conv(x)
 
         if comp_layer == "diff" and model_type == "target":

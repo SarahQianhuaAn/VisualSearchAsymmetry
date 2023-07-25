@@ -7,8 +7,9 @@
 import sys
 sys.path.insert(0, "../../")
 
-import sys
+# import sys
 sys.path.insert(0, "../")
+
 
 
 # In[2]:
@@ -30,7 +31,6 @@ t_start = time.time()
 base_data_path = "../dataset/"
 
 
-# In[ ]:
 
 
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -39,9 +39,8 @@ for dev in physical_devices:
     tf.config.experimental.set_memory_growth(dev, True)
 
 
-# In[3]:
 
-
+print("setting parameters")
 # eccNET parameters
 
 eccParam = {}
@@ -53,8 +52,6 @@ eccParam['fovea_size'] = 4
 eccParam['rf_quant'] = 1
 eccParam['pool_type'] = 'avg'
 
-
-# In[5]:
 
 
 ecc_models = []
@@ -72,16 +69,15 @@ for out_layer in [[1, 1, 1]]:
 
     ecc_models.append(model_desc)
 
+print("ecc_models created")
 
-# In[ ]:
 
-
-exps = ['categorization', 'curvature', 'intersection', 'lightning_dir']
+exps = ['person']
 
 pbar = tqdm(total=len(ecc_models)*12)
 for model_desc in ecc_models:
     vsm = VisualSearchModel(model_desc)
-    print(vsm.model_name)
+    print("vsm created, running " + vsm.model_name)
 
     save_path = "out/" + vsm.model_name
     try:
@@ -91,22 +87,32 @@ for model_desc in ecc_models:
         pass
 
     for exp_type in exps:
+        # exp_type = 'person'
         exp_info = get_exp_info(exp_type, base_data_path=base_data_path)
+        print("exp_info before loading")
         vsm.load_exp_info(exp_info, corner_bias=16*4*1)
 
-        num_task = exp_info['num_task']
-        NumStimuli = exp_info['NumStimuli']
-        NumFix = exp_info['NumFix']
-        exp_name = exp_info['exp_name']
+
+        num_task = exp_info['num_task'] # 2: person fix and person flip
+        NumStimuli = exp_info['NumStimuli'] # 210
+        NumFix = exp_info['NumFix'] #  21
+        exp_name = exp_info['exp_name'] # ['person_flip', 'person_std']
+
+        print("exp_info loaded")
+        # break
 
         for task_id in range(num_task):
+            # task id: person_fix, person_flip
             data = np.zeros((NumStimuli, NumFix, 2))
             CP = np.zeros((NumStimuli, NumFix), dtype=int)
-
+            print(NumStimuli)
+            print(exp_name[task_id])
+            # break
             for i in tqdm(range(NumStimuli), desc=exp_name[task_id]):
                 stim_path, gt_path, tar_path = get_data_paths(exp_type, task_id, i, base_data_path=base_data_path)
+                
                 saccade = vsm.start_search(stim_path, tar_path, gt_path)
-
+                print("saccade loaded for " + str(i))
                 j = saccade.shape[0]
                 if j < NumFix+1:
                     CP[i, j-1] = 1

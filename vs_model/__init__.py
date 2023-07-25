@@ -95,15 +95,20 @@ class VisualSearchModel:
         self.rev_img_flag = exp_info['rev_img_flag']
         self.fix = exp_info['fix']
         self.weight_pattern = exp_info['weight_pattern']
-
         self.corner_bias = corner_bias
         self.model_ip_shape = (2*(self.eye_res+corner_bias), 2*(self.eye_res+corner_bias), 3)
 
+        print("before loading model")
         if self.model_desc['ecc_depth'] == 0:
             self.target_model, self.stimuli_model = load_VGG16(self.vgg_model_path, self.model_ip_shape, self.tar_shape, eccParam=self.model_desc['eccParam'], ecc_depth=self.model_desc['ecc_depth'], comp_layer=self.model_desc['comp_layer'])
         else:
+            print("loading eccNET")
+            print(self.vgg_model_path, self.model_ip_shape, self.tar_shape, self.model_desc['eccParam'], self.model_desc['ecc_depth'], self.model_desc['comp_layer'])
             self.target_model, self.stimuli_model = load_eccNET(self.vgg_model_path, self.model_ip_shape, self.tar_shape, eccParam=self.model_desc['eccParam'], ecc_depth=self.model_desc['ecc_depth'], comp_layer=self.model_desc['comp_layer'])
+        print("after loading model")
 
+
+        # what does this do
         dog_size = exp_info['dog_size']
         self.win_size_l = dog_size[0][0]
         self.win_sigma_l = dog_size[0][1]
@@ -124,6 +129,8 @@ class VisualSearchModel:
         stimuli = self.__load_stim(stim_path)
         ip_stimuli = preprocess_input(np.uint8(stimuli))
 
+        #  eye_res = stim_shape[0]
+        #  corner_bias = 64
         temp_stim = np.uint8(np.zeros((self.stim_shape[0]+2*(self.eye_res+self.corner_bias), self.stim_shape[1]+2*(self.eye_res+self.corner_bias))))
         if self.gt_mask is None:
             temp_stim[self.eye_res+self.corner_bias:self.stim_shape[0]+self.eye_res+self.corner_bias, self.eye_res+self.corner_bias:self.stim_shape[1]+self.eye_res+self.corner_bias] = 1
